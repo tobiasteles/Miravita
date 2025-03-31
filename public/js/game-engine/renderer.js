@@ -1,144 +1,32 @@
-import { GameRenderer } from '../game-engine/renderer.js';
-import { AuthManager } from '../firebase/auth.js';
-import { Player } from '../game_modules/player/Player.js';
-import { GameDatabase } from '../firebase/database.js';
-import { GameRenderer } from './game-engine/renderer.js';
-
-class Game {
+export class GameRenderer {
   constructor() {
-    // Inicializa o renderizador
-    this.renderer = new GameRenderer();
-    
-    // Variáveis de estado do jogo
-    this.player = null;
-    this.gameActive = false;
-    
-    // Inicia os sistemas principais
-    this.initAuth();
-    this.initGameLoop();
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = 800;
+    this.canvas.height = 600;
+    this.ctx = this.canvas.getContext('2d');
+    document.getElementById('game-container').appendChild(this.canvas);
+    this.players = {};
   }
 
-  initAuth() {
-    AuthManager.onAuthStateChanged((user) => {
-      if (user) {
-        // Player autenticado
-        this.handleUserAuthenticated(user);
-      } else {
-        // Usuário não logado
-        this.handleUserLoggedOut();
-      }
+  addPlayer(playerId, playerData) {
+    this.players[playerId] = playerData;
+  }
+
+  removePlayer(playerId) {
+    delete this.players[playerId];
+  }
+
+  clear() {
+    this.players = {};
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  update() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    Object.values(this.players).forEach(player => {
+      this.ctx.fillStyle = player.isCurrentPlayer ? '#ff0000' : '#00ff00';
+      this.ctx.fillRect(player.position.x, player.position.y, 32, 32);
     });
-  }
-
-  handleUserAuthenticated(user) {
-    // Cria instância do jogador local
-    this.player = new Player(user.uid);
-    
-    // Configura controles
-    this.player.startMovementListener();
-    
-    // Inicia sincronização de posição
-    this.startPositionSync(user.uid);
-    
-    // Configura listeners do mundo
-    this.setupWorldListeners(user.uid);
-    
-    // Carrega dados do jogador
-    this.loadPlayerData(() => {
-      this.gameActive = true;
-      console.log('Jogo iniciado!');
-    });
-  }
-
-  startPositionSync(userId) {
-    // Atualiza posição no Firebase a cada 100ms
-    this.positionInterval = setInterval(() => {
-      this.player.updatePosition();
-      GameDatabase.updatePlayerPosition(userId, this.player.position);
-    }, 100);
-  }
-
-  setupWorldListeners(currentUserId) {
-    // Listener para mudanças nos outros jogadores
-    this.worldListener = GameDatabase.listenToWorldChanges((players) => {
-      Object.entries(players).forEach(([uid, playerData]) => {
-        if (uid === currentUserId) {
-          // Atualiza jogador local no renderizador
-          this.renderer.addPlayer(uid, {
-            ...playerData,
-            isCurrentPlayer: true
-          });
-        } else {
-          // Atualiza outros jogadores
-          this.renderer.addPlayer(uid, playerData);
-        }
-      });
-      
-      // Remove jogadores desconectados
-      const activeIds = Object.keys(players);
-      Object.keys(this.renderer.players).forEach(uid => {
-        if (!activeIds.includes(uid)) {
-          this.renderer.removePlayer(uid);
-        }
-      });
-    });
-  }
-
-  loadPlayerData(callback) {
-    this.player.loadFromDatabase(() => {
-      // Posição inicial do jogador
-      this.renderer.addPlayer(this.player.userId, {
-        position: this.player.position,
-        stats: this.player.stats,
-        isCurrentPlayer: true
-      });
-      callback();
-    });
-  }
-
-  initGameLoop() {
-    const update = (timestamp) => {
-      if (this.gameActive) {
-        // Atualiza lógica do jogo
-        this.update(timestamp);
-        
-        // Renderiza o frame
-        this.renderer.update();
-      }
-      
-      // Próximo frame
-      requestAnimationFrame(update);
-    };
-    
-    // Inicia o loop
-    requestAnimationFrame(update);
-  }
-
-  update(timestamp) {
-    // Atualizações de estado do jogo
-    // (futuras implementações de física, animações, etc.)
-  }
-
-  handleUserLoggedOut() {
-    // Cleanup do estado do jogo
-    this.gameActive = false;
-    
-    if (this.positionInterval) {
-      clearInterval(this.positionInterval);
-    }
-    
-    if (this.worldListener) {
-      this.worldListener.off(); // Remove Firebase listener
-    }
-    
-    this.renderer.clear();
-    this.showLoginScreen();
-  }
-
-  showLoginScreen() {
-    // Sua implementação de UI de login anterior
   }
 }
-
-// Inicializa o jogo
-new Game();

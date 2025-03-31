@@ -1,7 +1,7 @@
-import { GameRenderer } from '/game-engine/renderer.js';
 import { AuthManager } from '/firebase/auth.js';
 import { GameDatabase } from '/firebase/database.js';
 import { Player } from '/game_modules/player/Player.js';
+import { GameRenderer } from '/public/js/game-engine/renderer.js';
 
 
 class Game {
