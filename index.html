@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miravita MMORPG</title>
+    <link rel="stylesheet" href="public/css/main.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="loading-overlay">
+            <div class="loader"></div>
+            <p>Carregando o mundo de Miravita...</p>
+        </div>
+    </div>
+
+    <div id="login-screen" style="display: none;">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Senha">
+        <button id="login-btn">Entrar</button>
+        <button id="register-btn">Registrar</button>
+    </div>
+
+    <!-- Firebase SDK -->
+   
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js";
+    
+        const firebaseConfig = {apiKey: "AIzaSyDEb1g1NWV0sW1KWYf1ZSe1IyQEzHGZbzg",
+            authDomain: "firebornmmo.firebaseapp.com",
+            databaseURL: "https://firebornmmo-default-rtdb.firebaseio.com",
+            projectId: "firebornmmo",
+            storageBucket: "firebornmmo.firebasestorage.app",
+            messagingSenderId: "680663551686",
+            appId: "1:680663551686:web:fabfa865813f196a9491c7"};
+        
+        // Inicialização do Firebase
+        const app = initializeApp(firebaseConfig);
+        window.database = getDatabase(app);
+        window.auth = getAuth(app);
+    </script>
+    
+    <!-- Aplicação -->
+    <script type="module" src="/public/js/app.js"></script>
+
+
+</body>
+</html>
