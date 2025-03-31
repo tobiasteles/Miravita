@@ -16,6 +16,7 @@ class Game {
   async initAuth() {
     AuthManager.onAuthStateChanged(async (user) => {
       if (user) {
+        console.log('Usuário autenticado:', user.uid); 
         await this.handleUserLogin(user.uid);
       } else {
         this.handleUserLogout();
